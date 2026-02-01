@@ -14,7 +14,7 @@ import streamlit as st
 import tiktoken
 from langchain_openai import ChatOpenAI
 from langchain_community.callbacks.streamlit import StreamlitCallbackHandler
-from langchain import SerpAPIWrapper
+from langchain import SerpAPIWrapper, WikipediaAPIWrapper
 from langchain.tools import Tool
 from langchain.agents import AgentType, initialize_agent
 import utils
@@ -96,7 +96,8 @@ def initialize_logger():
         f"[%(levelname)s] %(asctime)s line %(lineno)s, in %(funcName)s, session_id={st.session_state.session_id}: %(message)s"
     )
     log_handler.setFormatter(formatter)
-    logger.setLevel(logging.INFO)
+    # logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     logger.addHandler(log_handler)
 
 
@@ -123,6 +124,7 @@ def initialize_agent_executor():
 
     # Web検索用のToolを設定するためのオブジェクトを用意
     search = SerpAPIWrapper()
+    search_wiki = WikipediaAPIWrapper()
     # Agent Executorに渡すTool一覧を用意
     tools = [
         # 会社に関するデータ検索用のTool
@@ -148,7 +150,15 @@ def initialize_agent_executor():
             name = ct.SEARCH_WEB_INFO_TOOL_NAME,
             func=search.run,
             description=ct.SEARCH_WEB_INFO_TOOL_DESCRIPTION
+        ),
+        # Wikipedia検索用のTool
+        Tool(
+            name = ct.SEARCH_WIKI_INFO_TOOL_NAME,
+            func=search_wiki.run,
+            description=ct.SEARCH_WIKI_INFO_TOOL_DESCRIPTION
         )
+        # 他標準toolsの追加
+
     ]
 
     # Agent Executorの作成
@@ -160,3 +170,4 @@ def initialize_agent_executor():
         early_stopping_method="generate",
         handle_parsing_errors=True
     )
+    logger.debug(f"Agent Executor has been initialized.")

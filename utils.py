@@ -274,6 +274,8 @@ def notice_slack(chat_message):
     Returns:
         問い合わせサンクスメッセージ
     """
+    # 【DEBUG】処理確認用にログ出力
+    logger = logging.getLogger(ct.LOGGER_NAME)
 
     # Slack通知用のAgent Executorを作成
     toolkit = SlackToolkit()
@@ -281,7 +283,8 @@ def notice_slack(chat_message):
     agent_executor = initialize_agent(
         llm=st.session_state.llm,
         tools=tools,
-        agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION
+        agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+        verbose=True # DEBUG
     )
 
     # 担当者割り振りに使う用の「従業員情報」と「問い合わせ対応履歴」の読み込み
@@ -345,26 +348,30 @@ def notice_slack(chat_message):
     
     # 問い合わせ内容と関連性が高い従業員情報の中から、SlackIDのみを抽出
     slack_ids = get_slack_ids(target_employees)
+    logger.debug(f"slack_ids: {slack_ids}")
     
     # 抽出したSlackIDの連結テキストを生成
     slack_id_text = create_slack_id_text(slack_ids)
     
     # プロンプトに埋め込むための（問い合わせ内容と関連性が高い）従業員情報テキストを取得
     context = get_context(target_employees)
-
+    # 関連性の高かった従業員名の取得
+    name_list = context.splitlines()
+    name_list = [name.split("名前: ",1)[1] for name in name_list if "名前:" in name]
+    logger.debug(f"関連性の高い従業員のname_list: {name_list}")
     # 現在日時を取得
     now_datetime = get_datetime()
 
     # Slack通知用のプロンプト生成
     prompt = PromptTemplate(
-        input_variables=["slack_id_text", "query", "context", "now_datetime"],
+        input_variables=["slack_id_text", "query", "context", "now_datetime", "name_list"],
         template=ct.SYSTEM_PROMPT_NOTICE_SLACK,
     )
-    prompt_message = prompt.format(slack_id_text=slack_id_text, query=chat_message, context=context, now_datetime=now_datetime)
+    prompt_message = prompt.format(slack_id_text=slack_id_text, query=chat_message, context=context, now_datetime=now_datetime, name_list=name_list)
 
     # Slack通知の実行
     agent_executor.invoke({"input": prompt_message})
-
+    logger.debug(f"prompt: {prompt_message}")
     return ct.CONTACT_THANKS_MESSAGE
 
 
