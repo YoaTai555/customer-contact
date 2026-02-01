@@ -55,10 +55,10 @@ def display_sidebar():
         st.markdown("**【問い合わせモードとは】**")
         st.code("問い合わせモードを「ON」にしてメッセージを送信すると、担当者に直接届きます。", wrap_lines=True)
         
-        st.divider()
-        st.markdown("**【DEBUG】【課題対応用の欄】**")
-        st.code("システムにログインできないのですが、対応方法を教えてください", wrap_lines=True)
-        st.divider()
+        # st.divider()
+        # st.markdown("**【DEBUG】【課題対応用の欄】**")
+        # st.code("システムにログインできないのですが、対応方法を教えてください", wrap_lines=True)
+        # st.divider()
 
 
 def display_initial_ai_message():
