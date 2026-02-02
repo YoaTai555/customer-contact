@@ -96,8 +96,8 @@ def initialize_logger():
         f"[%(levelname)s] %(asctime)s line %(lineno)s, in %(funcName)s, session_id={st.session_state.session_id}: %(message)s"
     )
     log_handler.setFormatter(formatter)
-    # logger.setLevel(logging.INFO)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
+    # logger.setLevel(logging.DEBUG)
     logger.addHandler(log_handler)
 
 
@@ -170,4 +170,3 @@ def initialize_agent_executor():
         early_stopping_method="generate",
         handle_parsing_errors=True
     )
-    logger.debug(f"Agent Executor has been initialized.")
